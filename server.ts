@@ -592,25 +592,32 @@ async function startServer() {
   const app = express();
   app.use(express.json({ limit: '5mb' }));
 
-  // Allow PWA manifest, SW, and icons to load cleanly with or without credentials
+  // Allow PWA manifest, SW, and icons to load cleanly in browsers & PWABuilder
   app.use((req, res, next) => {
     if (
+      req.path === '/manifest.json' ||
       req.path === '/manifest.webmanifest' ||
       req.path === '/sw.js' ||
       req.path.startsWith('/pwa-') ||
+      req.path.startsWith('/screenshot-') ||
       req.path === '/icon.svg' ||
       req.path === '/apple-touch-icon.png'
     ) {
-      const reqOrigin = req.headers.origin;
-      if (reqOrigin) {
-        res.setHeader('Access-Control-Allow-Origin', reqOrigin);
-        res.setHeader('Access-Control-Allow-Credentials', 'true');
-        res.setHeader('Vary', 'Origin');
-      } else {
-        res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      if (req.path === '/manifest.json' || req.path === '/manifest.webmanifest') {
+        res.setHeader('Content-Type', 'application/manifest+json; charset=utf-8');
       }
     }
     next();
+  });
+
+  // Also alias /manifest.webmanifest to manifest.json for legacy tools
+  app.get('/manifest.webmanifest', (_req, res) => {
+    const prodPath = path.resolve(process.cwd(), 'dist/manifest.json');
+    const pubPath = path.resolve(process.cwd(), 'public/manifest.json');
+    const target = fs.existsSync(prodPath) ? prodPath : pubPath;
+    res.setHeader('Content-Type', 'application/manifest+json; charset=utf-8');
+    res.sendFile(target);
   });
 
   // In dev mode, ensure /sw.js returns a valid JS service worker instead of SPA HTML fallback

@@ -82,7 +82,7 @@ Run \`./build-apk.sh\` (requires Node.js 18+ and JDK 17) to build an Android TWA
         fallbackType: 'customtabs',
         enableSiteSettingsShortcut: true,
         orientation: 'default',
-        webManifestUrl: `${cleanOrigin}/manifest.webmanifest`,
+        webManifestUrl: `${cleanOrigin}/manifest.json`,
       },
       null,
       2
@@ -95,7 +95,7 @@ Run \`./build-apk.sh\` (requires Node.js 18+ and JDK 17) to build an Android TWA
     `#!/usr/bin/env bash
 set -euo pipefail
 echo "Building ClipVault Android APK via Bubblewrap..."
-npx @bubblewrap/cli update --manifest="${cleanOrigin}/manifest.webmanifest" || true
+npx @bubblewrap/cli update --manifest="${cleanOrigin}/manifest.json" || true
 npx @bubblewrap/cli build
 echo "Done! Look for app-release-signed.apk in this directory."
 `
